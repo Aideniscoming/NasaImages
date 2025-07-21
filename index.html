@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Search by Date</title>
+  <link rel="stylesheet" href="style.css">
+ 
+</head>
+<body>
+  <video id="video" autoplay loop muted playsinline>
+    <source src="video.mp4" type="video/mp4">
+  </video>
+  <div class="container">
+    <h1>Earth Images</h1>
+    <div class="searchcontainer">
+        <label for="dateInput">Select Date:</label>
+        <input type="date" id="dateInput" />
+        <button onclick='fetchImageByDate()' id="searchBtn">Search</button>
+    </div>
+    <div class="image-container" id="imageContainer">
+        <img src="" alt="Image will be displayed here" id="image">
+        <p id="caption"></p>
+    </div>  
+    <div id="controls" style=" margin-top: 10px;">
+        <button onclick="prevImage()">Previous</button>
+        <button onclick="SlideImage()">SlideShow</button>
+        <button onclick="nextImage()">Next</button>
+    </div>
+  </div>
+  <div class="container">
+    <h1>Mars' Surface Images</h1>
+    <div class="searchcontainer">
+        <label for="Sol" >Select Sol:</label>
+        <input type="number" id="solInput2" placeholder="select sol from 0-4200"/>
+        <button onclick='fetchMarsImage()' id="searchBtn2">Search</button>
+    </div>
+    <div class="image-container" id="imageContainer2">
+        <img src="" alt="Image will be displayed here" id="image2">
+        <p id="caption2"></p>
+    </div>  
+    <div id="controls2" style=" margin-top: 10px;">
+        <button onclick="prevImage2()">Previous</button>
+      
+        <button onclick="nextImage2()">Next</button>
+    </div>
+  </div>
+  <script src="main.js"></script>
+
+</body>
+</html>
