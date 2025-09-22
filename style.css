@@ -87,26 +87,7 @@
         font-weight: bold;
         color: white
     }
-    #controls, #controls2 {
-        display: flex; 
-        justify-content: space-evenly; 
-        align-items: center; 
-        margin-top: 16px;
-        width: 100%;
-    }
-    #controls button, #controls2 button {
-        width: 120px;
-        padding: 8px 16px; 
-        background-color: #007BFF; 
-        color: white; 
-        border: none; 
-        border-radius: 15px; 
-        cursor: pointer;
-    }
-    #controls2 button:hover,
-    #controls button:hover {
-        background-color: #0056b3;
-    }
+   
     @media screen and (max-width: 1200px) {
         body {
             flex-direction: column;
