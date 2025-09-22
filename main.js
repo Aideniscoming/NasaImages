@@ -1,157 +1,109 @@
-
-
-
-const imageContainer = document.getElementById('imageContainer');
-const image = document.getElementById('image');
-const image2 = document.getElementById('image2');
-const caption2 = document.getElementById('caption2');
-const caption = document.getElementById('caption');
-const imageContainer2 = document.getElementById('imageContainer2');
+// Elements
+const earthImage = document.getElementById('image');
+const earthCaption = document.getElementById('caption');
+const marsImage = document.getElementById('image2');
+const marsCaption = document.getElementById('caption2');
+const controls = document.getElementById('controls');
 
 const apiKey = "GIL57PDXFMLjlGFlxrS7EPY3BGQMjr1juekJApTm";
 
-let ImageArray = [];
 let marsImageArray = [];
-let ImaIndex = 0;
+let marsIndex = 0;
 
-async function fetchImageByDate() {
-  try {
+let earthDatesArray = []; // for slideshow (optional)
+let earthIndex = 0;
+let earthSlideInterval = null;
+
+// ------------------------ FETCH EARTH IMAGE ------------------------
+function fetchEarthImageByDate() {
     const dateInput = document.getElementById('dateInput').value;
     if (!dateInput) {
-      alert('Please select a date');
-      return;
-    }
-    const apiUrl = `https://api.nasa.gov/EPIC/api/natural/date/${dateInput}?api_key=${apiKey}`
-   
-    const EarthResponse = await fetch(apiUrl);
-    
-    if (!EarthResponse.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await EarthResponse.json();
-
-    if (data.length === 0) {
-        imageContainer.innerHTML = '<p>No images found for this date.</p>';
+        alert('Please select a date');
         return;
     }
-    data.forEach(object => {
-      const [year, month, day] = object.date.split(' ')[0].split('-');
-      const imageUrl = `https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/png/${object.image}.png`;
-      const time = object.date.split(' ')[1];
-      ImageArray.push({ imageUrl, time });
-    });
-    
-    if (ImageArray.length > 0) {
-        ImaIndex = 0;
-        displayImage(ImaIndex);
-    } else {
-        imageContainer.innerHTML = '<p>No images available for this date.</p>';
-    }
-    
+
+    const layer = 'VIIRS_SNPP_CorrectedReflectance_TrueColor';
+    const projection = 'epsg4326';
+    const format = 'image/png';
+    const bbox = '-180,-90,180,90'; // full world
+    const width = 800;
+    const height = 400;
+    const styles = '';
+
+    const imageUrl = `https://gibs.earthdata.nasa.gov/wms/${projection}/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=${layer}&STYLES=${styles}&BBOX=${bbox}&WIDTH=${width}&HEIGHT=${height}&SRS=EPSG:4326&FORMAT=${format}&TIME=${dateInput}`;
+
+    // Display image directly (avoiding CORB/CORS)
+    earthImage.src = imageUrl;
+    earthCaption.textContent = `Date: ${dateInput}`;
+    controls.style.display = 'flex';
+
+    // Optional: for slideshow support
+    earthDatesArray = [dateInput]; // add more dates if desired
+    earthIndex = 0;
 }
-  catch (error) {
-    console.error(error);
-    window.alert(`Error: ${error.message}`);
-  }
-}
+
+
+// ------------------------ MARS IMAGE ------------------------
 async function fetchMarsImage() {
     try {
-        const dataInput2 = document.getElementById('solInput2').value;
-        if (!dataInput2) {
-        alert('Please select a sol');
-        return; 
-        }
-        const apiUrl = `https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=${dataInput2}&camera=mast&api_key=${apiKey}`
-        const MarsResponse = await fetch(apiUrl);
-        if (!MarsResponse.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const MarsData = await MarsResponse.json();
-        if (MarsData.photos.length === 0) {
-            imageContainer.innerHTML = '<p>No images found for this sol.</p>';
+        const solInput = document.getElementById('solInput2').value;
+        if (!solInput) {
+            alert('Please select a sol');
             return;
         }
-        MarsData.photos.forEach(object => {
-            const imageUrl = object.img_src;
-            const time = object.earth_date;
-            marsImageArray.push({ imageUrl, time });
-        })
-        if (marsImageArray.length > 0) {
-        ImaIndex = 0;
-        displayMarsImage(ImaIndex);
-        } else {
-            imageContainer2.innerHTML = '<p>No images available for this date.</p>';
+
+        const apiUrl = `https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=${solInput}&camera=mast&api_key=${apiKey}`;
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const data = await response.json();
+        if (data.photos.length === 0) {
+            marsImage.src = '';
+            marsCaption.textContent = 'No images found for this sol.';
+            return;
         }
-   }
-    catch (error) {
+
+        // Populate marsImageArray
+        marsImageArray = data.photos.map(photo => ({
+            url: photo.img_src,
+            date: photo.earth_date
+        }));
+
+        marsIndex = 0;
+        displayMarsImage(marsIndex);
+
+    } catch (error) {
         console.error(error);
-        window.alert(`Error: ${error.message}`);
-    }
-}
-function displayMarsImage(ImaIndex) {
-    image2.src = marsImageArray[ImaIndex].imageUrl;
-    caption2.textContent = `Date: ${marsImageArray[ImaIndex].time}`;
-    document.getElementById('controls').style.display = 'flex';
-    ImaIndex = ImaIndex; 
-}
-function prevImage2() {
-    if (ImaIndex > 0) {
-        ImaIndex--;
-        displayMarsImage(ImaIndex);
-    } else {
-        ImaIndex = 20
-        displayMarsImage(ImaIndex);; 
-    }
-}
-function nextImage2() {
-    if (ImaIndex <= 20) {
-        ImaIndex++;
-        displayMarsImage(ImaIndex);
-    }
-    else {
-        ImaIndex = 0
-        displayMarssImage(ImaIndex);; 
+        alert(`Error fetching Mars image: ${error.message}`);
     }
 }
 
+function displayMarsImage(index) {
+    marsImage.src = marsImageArray[index].url;
+    marsCaption.textContent = `Date: ${marsImageArray[index].date}`;
+}
 
-function displayImage(ImaIndex) {
-    image.src = ImageArray[ImaIndex].imageUrl;
-    caption.textContent = `Time: ${ImageArray[ImaIndex].time}`;
-    document.getElementById('controls').style.display = 'flex';
-    ImaIndex = ImaIndex; 
+// Mars navigation
+function prevMarsImage() {
+    if (marsImageArray.length === 0) return;
+    marsIndex = (marsIndex - 1 + marsImageArray.length) % marsImageArray.length;
+    displayMarsImage(marsIndex);
 }
-function prevImage() {
-    if (ImaIndex > 0) {
-        ImaIndex--;
-        displayImage(ImaIndex);
-    } else {
-        ImaIndex = ImageArray.length - 1
-        displayImage(ImaIndex);; 
-    }
-}
-function nextImage() {
-    if (ImaIndex < (ImageArray.length - 1)) {
-        ImaIndex++;
-        displayImage(ImaIndex);
-    }
-    else {
-        ImaIndex = 0
-        displayImage(ImaIndex);; 
-    }
-}
-let SlideInterval = null;
-function SlideImage() {
-    ImaIndex = 0;
-    SlideInterval = setInterval(() => {
-        
 
-        if (ImaIndex === ImageArray.length - 1) {
-        clearInterval(SlideInterval);
-        displayImage(ImaIndex) }
-        else {
-            nextImage();
-        }// Reset index if it exceeds the length of the array
-    }, 1500);
+function nextMarsImage() {
+    if (marsImageArray.length === 0) return;
+    marsIndex = (marsIndex + 1) % marsImageArray.length;
+    displayMarsImage(marsIndex);
+}
+
+// ------------------------ OPTIONAL: Mars Slideshow ------------------------
+let marsSlideInterval = null;
+function startMarsSlideShow(interval = 1500) {
+    if (marsImageArray.length === 0) return;
+    clearInterval(marsSlideInterval);
+    marsSlideInterval = setInterval(nextMarsImage, interval);
+}
+
+function stopMarsSlideShow() {
+    clearInterval(marsSlideInterval);
 }
